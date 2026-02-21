@@ -3,6 +3,7 @@
 #include "world/World.hpp"
 
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 
 namespace {
@@ -34,6 +35,30 @@ bool testChunkStorageRoundTrip() {
             std::cerr << "voxel mismatch at " << i << '\n';
             return false;
         }
+    }
+
+    return true;
+}
+
+
+
+bool testChunkStorageRejectsCorruptedFile() {
+    const std::filesystem::path root{"test_cache/chunk_storage_corrupt"};
+    std::filesystem::remove_all(root);
+    std::filesystem::create_directories(root);
+
+    const std::filesystem::path file = root / "chunk_1_2.bin";
+    {
+        std::ofstream out{file, std::ios::binary | std::ios::trunc};
+        const std::uint32_t badMagic = 0xDEADBEEFu;
+        out.write(reinterpret_cast<const char*>(&badMagic), sizeof(badMagic));
+    }
+
+    veys::world::ChunkStorage storage{root};
+    veys::world::Chunk loaded;
+    if (storage.loadChunk({1, 2}, loaded)) {
+        std::cerr << "corrupted chunk unexpectedly loaded\n";
+        return false;
     }
 
     return true;
@@ -106,10 +131,11 @@ bool testWorldEvictionWhileMoving() {
 
 int main() {
     const bool okStorage = testChunkStorageRoundTrip();
+    const bool okCorrupt = testChunkStorageRejectsCorruptedFile();
     const bool okWorldCache = testWorldCacheHitAfterWarmup();
     const bool okWorldEviction = testWorldEvictionWhileMoving();
 
-    if (!okStorage || !okWorldCache || !okWorldEviction) {
+    if (!okStorage || !okCorrupt || !okWorldCache || !okWorldEviction) {
         return 1;
     }
 
