@@ -37,7 +37,7 @@
 - [x] Документация архитектуры и roadmap.
 - [ ] Профилирование (CPU/GPU markers), telemetry HUD.
 - [~] Юнит-тесты core/world модулей (добавлен стартовый набор world tests).
-- [ ] Интеграционные тесты генерации/стриминга.
+- [~] Интеграционные тесты генерации/стриминга (добавлены сценарии cache+eviction move test).
 - [ ] Crash reporting и deterministic replay.
 
 ## 5) Online/LiveOps

@@ -54,6 +54,7 @@ void World::evictFarChunks(ChunkCoord center, int keepRadius) {
     for (auto it = chunks_.begin(); it != chunks_.end();) {
         if (distanceSq(it->first, center) > keepDistanceSq) {
             storage_.saveChunk(it->first, it->second);
+            ++evictedChunks_;
             touchTick_.erase(it->first);
             it = chunks_.erase(it);
             continue;
@@ -91,6 +92,7 @@ void World::enforceBudget(ChunkCoord center, int protectedRadius) {
         }
 
         storage_.saveChunk(victim->first, victim->second);
+        ++evictedChunks_;
         touchTick_.erase(victim->first);
         chunks_.erase(victim);
     }
@@ -115,6 +117,7 @@ void World::updateStreaming(float playerX, float playerZ, int radius) {
             Chunk cached;
             if (storage_.loadChunk(coord, cached)) {
                 ++cacheHits_;
+                ++loadedFromCacheChunks_;
                 chunks_.insert_or_assign(coord, cached);
                 touchChunk(coord);
                 continue;
@@ -162,6 +165,7 @@ void World::pollGeneration() {
 
         Chunk chunk = it->future.get();
         storage_.saveChunk(it->coord, chunk);
+        ++generatedChunks_;
         chunks_.insert_or_assign(it->coord, std::move(chunk));
         touchChunk(it->coord);
         it = pending_.erase(it);
@@ -182,6 +186,18 @@ std::size_t World::cacheHits() const noexcept {
 
 std::size_t World::cacheMisses() const noexcept {
     return cacheMisses_;
+}
+
+std::size_t World::generatedChunks() const noexcept {
+    return generatedChunks_;
+}
+
+std::size_t World::loadedFromCacheChunks() const noexcept {
+    return loadedFromCacheChunks_;
+}
+
+std::size_t World::evictedChunks() const noexcept {
+    return evictedChunks_;
 }
 
 std::vector<const Chunk*> World::loadedChunks() const {

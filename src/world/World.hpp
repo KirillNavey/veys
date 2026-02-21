@@ -26,6 +26,9 @@ public:
     [[nodiscard]] std::size_t pendingChunkCount() const noexcept;
     [[nodiscard]] std::size_t cacheHits() const noexcept;
     [[nodiscard]] std::size_t cacheMisses() const noexcept;
+    [[nodiscard]] std::size_t generatedChunks() const noexcept;
+    [[nodiscard]] std::size_t loadedFromCacheChunks() const noexcept;
+    [[nodiscard]] std::size_t evictedChunks() const noexcept;
     [[nodiscard]] std::vector<const Chunk*> loadedChunks() const;
 
 private:
@@ -54,6 +57,9 @@ private:
     std::size_t streamTick_{0};
     std::size_t cacheHits_{0};
     std::size_t cacheMisses_{0};
+    std::size_t generatedChunks_{0};
+    std::size_t loadedFromCacheChunks_{0};
+    std::size_t evictedChunks_{0};
 };
 
 } // namespace veys::world

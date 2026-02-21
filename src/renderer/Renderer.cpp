@@ -44,6 +44,9 @@ void Renderer::drawFrame(const world::World& world) {
                   << " | pending chunks=" << world.pendingChunkCount()
                   << " | cache hits=" << world.cacheHits()
                   << " | cache misses=" << world.cacheMisses()
+                  << " | generated=" << world.generatedChunks()
+                  << " | cache loaded=" << world.loadedFromCacheChunks()
+                  << " | evicted=" << world.evictedChunks()
                   << " | visible voxels=" << visibleVoxels << '\n';
     }
 }

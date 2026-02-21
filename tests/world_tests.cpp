@@ -51,8 +51,8 @@ bool testWorldCacheHitAfterWarmup() {
         world.pollGeneration();
     }
 
-    if (world.loadedChunkCount() == 0) {
-        std::cerr << "world loadedChunkCount is zero\n";
+    if (world.loadedChunkCount() == 0 || world.generatedChunks() == 0) {
+        std::cerr << "world warmup failed to generate chunks\n";
         return false;
     }
 
@@ -60,7 +60,7 @@ bool testWorldCacheHitAfterWarmup() {
     reload.updateStreaming(0.0F, 0.0F, 2);
     reload.pollGeneration();
 
-    if (reload.cacheHits() == 0) {
+    if (reload.cacheHits() == 0 || reload.loadedFromCacheChunks() == 0) {
         std::cerr << "expected cache hits after warmup\n";
         return false;
     }
@@ -73,13 +73,43 @@ bool testWorldCacheHitAfterWarmup() {
     return true;
 }
 
+bool testWorldEvictionWhileMoving() {
+    const std::filesystem::path root{"test_cache/world_move"};
+    std::filesystem::remove_all(root);
+
+    veys::JobSystem jobs;
+    veys::world::World world{jobs, root};
+
+    for (int step = 0; step < 18; ++step) {
+        const float x = static_cast<float>(step * 32);
+        world.updateStreaming(x, 0.0F, 2);
+
+        for (int i = 0; i < 8; ++i) {
+            world.pollGeneration();
+        }
+    }
+
+    if (world.evictedChunks() == 0) {
+        std::cerr << "expected eviction while moving through world\n";
+        return false;
+    }
+
+    if (world.loadedChunkCount() > 40) {
+        std::cerr << "loaded chunk count unexpectedly high\n";
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace
 
 int main() {
     const bool okStorage = testChunkStorageRoundTrip();
-    const bool okWorld = testWorldCacheHitAfterWarmup();
+    const bool okWorldCache = testWorldCacheHitAfterWarmup();
+    const bool okWorldEviction = testWorldEvictionWhileMoving();
 
-    if (!okStorage || !okWorld) {
+    if (!okStorage || !okWorldCache || !okWorldEviction) {
         return 1;
     }
 
