@@ -13,13 +13,15 @@
 - `JobSystem` thread pool с количеством воркеров = hardware concurrency.
 - Chunk-сетка 32³ и детерминированная генерация рельефа.
 - `World` контейнер с асинхронным streaming чанков вокруг игрока.
+- Базовый eviction policy + приоритизация генерации ближайших чанков + budget на количество чанков в памяти.
 - Рендерер с Vulkan-aware и CPU fallback-веткой.
 
 ## Следующие этапы
 1. **World streaming production-ready**:
-   - eviction + memory budget.
-   - priority queue генерации ближних чанков.
-   - сериализация/кеш чанков на диск.
+   - [x] eviction + базовый memory budget.
+   - [x] приоритизация генерации ближних чанков.
+   - [ ] сериализация/кеш чанков на диск.
+   - [ ] LRU/temperature-based memory eviction.
 2. **Vulkan backend production-ready**:
    - Instance/device/swapchain/descriptor allocator/frame graph.
    - GPU memory allocator + transient allocators.

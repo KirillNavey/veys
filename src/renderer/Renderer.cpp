@@ -41,6 +41,7 @@ void Renderer::drawFrame(const world::World& world) {
         std::cout << "Frame " << frameIndex_
                   << " | backend=" << (vulkanAvailable_ ? "Vulkan" : "Stub")
                   << " | loaded chunks=" << chunks.size()
+                  << " | pending chunks=" << world.pendingChunkCount()
                   << " | visible voxels=" << visibleVoxels << '\n';
     }
 }

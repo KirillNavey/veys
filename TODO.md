@@ -14,8 +14,8 @@
 - [x] Асинхронная генерация чанков вокруг позиции игрока.
 - [x] Неблокирующий polling завершённых задач генерации.
 - [x] Ограниченный радиус стриминга (клипмап уровня 0).
-- [ ] Удаление дальних чанков и лимиты по памяти.
-- [ ] Система приоритетов (ближние чанки важнее).
+- [x] Удаление дальних чанков и лимиты по памяти (базовый budget).
+- [x] Система приоритетов (ближние чанки важнее).
 - [ ] Сериализация/десериализация чанков на диск.
 
 ## 2) Render Backend
@@ -47,5 +47,5 @@
 
 ## Ближайшие 3 спринта
 1. **Sprint A (сделано в этом PR):** world streaming foundation + async chunk generation + renderer integration.
-2. **Sprint B:** eviction policy, chunk priorities, LRU memory budget, save/load format.
+2. **Sprint B (частично сделано):** eviction policy + chunk priorities + базовый memory budget; далее LRU и save/load format.
 3. **Sprint C:** Vulkan swapchain path, upload buffers, первые drawable chunk meshes.

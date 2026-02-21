@@ -26,32 +26,68 @@ std::uint32_t World::makeSeed(ChunkCoord coord) noexcept {
     return x ^ z ^ 0x9E3779B9u;
 }
 
+int World::distanceSq(ChunkCoord a, ChunkCoord b) noexcept {
+    const int dx = a.x - b.x;
+    const int dz = a.z - b.z;
+    return dx * dx + dz * dz;
+}
+
+bool World::isChunkPending(ChunkCoord coord) const {
+    return std::any_of(
+        pending_.begin(), pending_.end(),
+        [&coord](const PendingChunk& pending) { return pending.coord == coord; });
+}
+
+void World::evictFarChunks(ChunkCoord center, int keepRadius) {
+    const int keepDistanceSq = keepRadius * keepRadius;
+
+    for (auto it = chunks_.begin(); it != chunks_.end();) {
+        if (distanceSq(it->first, center) > keepDistanceSq) {
+            it = chunks_.erase(it);
+            continue;
+        }
+        ++it;
+    }
+}
+
 void World::updateStreaming(float playerX, float playerZ, int radius) {
     const ChunkCoord center{worldToChunk(playerX), worldToChunk(playerZ)};
+    evictFarChunks(center, radius + 1);
+
+    std::vector<ChunkCoord> candidates;
+    candidates.reserve(static_cast<std::size_t>((radius * 2 + 1) * (radius * 2 + 1)));
 
     for (int dz = -radius; dz <= radius; ++dz) {
         for (int dx = -radius; dx <= radius; ++dx) {
-            ChunkCoord coord{center.x + dx, center.z + dz};
-            if (chunks_.contains(coord)) {
+            const ChunkCoord coord{center.x + dx, center.z + dz};
+            if (chunks_.contains(coord) || isChunkPending(coord)) {
                 continue;
             }
-
-            const bool isPending = std::any_of(
-                pending_.begin(), pending_.end(),
-                [&coord](const PendingChunk& pending) { return pending.coord == coord; });
-            if (isPending) {
-                continue;
-            }
-
-            pending_.push_back(PendingChunk{
-                .coord = coord,
-                .future = jobs_.enqueue([coord]() {
-                    Chunk chunk;
-                    chunk.generateTerrain(makeSeed(coord), coord.x, coord.z);
-                    return chunk;
-                }),
-            });
+            candidates.push_back(coord);
         }
+    }
+
+    std::sort(candidates.begin(), candidates.end(), [center](ChunkCoord lhs, ChunkCoord rhs) {
+        return distanceSq(lhs, center) < distanceSq(rhs, center);
+    });
+
+    const std::size_t loadedAndPending = chunks_.size() + pending_.size();
+    const std::size_t availableBudget = loadedAndPending < kMaxLoadedChunks
+                                            ? kMaxLoadedChunks - loadedAndPending
+                                            : 0;
+    const std::size_t newRequests = std::min({candidates.size(), availableBudget,
+                                              kMaxGenerationRequestsPerUpdate});
+
+    for (std::size_t i = 0; i < newRequests; ++i) {
+        const ChunkCoord coord = candidates[i];
+        pending_.push_back(PendingChunk{
+            .coord = coord,
+            .future = jobs_.enqueue([coord]() {
+                Chunk chunk;
+                chunk.generateTerrain(makeSeed(coord), coord.x, coord.z);
+                return chunk;
+            }),
+        });
     }
 }
 
@@ -70,6 +106,10 @@ void World::pollGeneration() {
 
 std::size_t World::loadedChunkCount() const noexcept {
     return chunks_.size();
+}
+
+std::size_t World::pendingChunkCount() const noexcept {
+    return pending_.size();
 }
 
 std::vector<const Chunk*> World::loadedChunks() const {

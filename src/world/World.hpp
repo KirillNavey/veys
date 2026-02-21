@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <future>
-#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -31,6 +30,7 @@ public:
     void pollGeneration();
 
     [[nodiscard]] std::size_t loadedChunkCount() const noexcept;
+    [[nodiscard]] std::size_t pendingChunkCount() const noexcept;
     [[nodiscard]] std::vector<const Chunk*> loadedChunks() const;
 
 private:
@@ -39,8 +39,15 @@ private:
         std::future<Chunk> future{};
     };
 
+    static constexpr std::size_t kMaxLoadedChunks = 96;
+    static constexpr std::size_t kMaxGenerationRequestsPerUpdate = 6;
+
     static int worldToChunk(float worldPos) noexcept;
     [[nodiscard]] static std::uint32_t makeSeed(ChunkCoord coord) noexcept;
+    [[nodiscard]] static int distanceSq(ChunkCoord a, ChunkCoord b) noexcept;
+
+    [[nodiscard]] bool isChunkPending(ChunkCoord coord) const;
+    void evictFarChunks(ChunkCoord center, int keepRadius);
 
     veys::JobSystem& jobs_;
     std::unordered_map<ChunkCoord, Chunk, ChunkCoordHash> chunks_{};
