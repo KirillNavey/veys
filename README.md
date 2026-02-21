@@ -14,6 +14,7 @@ cmake --build build -j
 - Асинхронный world streaming: генерация чанков вокруг игрока в фоне.
 - Базовые chunk priorities и eviction policy с лимитом на число чанков в памяти.
 - Базовый бинарный cache чанков на диск (save/load).
+- Базовый LRU eviction + runtime telemetry cache hit/miss.
 - Подготовка к Vulkan backend для современных GPU (включая RTX 50xx).
 - Безопасная архитектура с RAII и без ручного управления временем жизни.
 

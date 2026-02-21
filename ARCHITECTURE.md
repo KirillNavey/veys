@@ -21,7 +21,7 @@
    - [x] eviction + базовый memory budget.
    - [x] приоритизация генерации ближних чанков.
    - [x] сериализация/кеш чанков на диск (binary cache).
-   - [ ] LRU/temperature-based memory eviction.
+   - [x] базовый LRU eviction по последнему использованию.
 2. **Vulkan backend production-ready**:
    - Instance/device/swapchain/descriptor allocator/frame graph.
    - GPU memory allocator + transient allocators.

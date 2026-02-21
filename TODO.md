@@ -47,5 +47,5 @@
 
 ## Ближайшие 3 спринта
 1. **Sprint A (сделано в этом PR):** world streaming foundation + async chunk generation + renderer integration.
-2. **Sprint B (почти готов):** eviction policy + chunk priorities + базовый memory budget + save/load cache; далее LRU format evolution.
+2. **Sprint B (закрыт):** eviction policy + chunk priorities + memory budget + save/load cache + базовый LRU eviction.
 3. **Sprint C:** Vulkan swapchain path, upload buffers, первые drawable chunk meshes.

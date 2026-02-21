@@ -22,6 +22,8 @@ public:
 
     [[nodiscard]] std::size_t loadedChunkCount() const noexcept;
     [[nodiscard]] std::size_t pendingChunkCount() const noexcept;
+    [[nodiscard]] std::size_t cacheHits() const noexcept;
+    [[nodiscard]] std::size_t cacheMisses() const noexcept;
     [[nodiscard]] std::vector<const Chunk*> loadedChunks() const;
 
 private:
@@ -38,12 +40,18 @@ private:
     [[nodiscard]] static int distanceSq(ChunkCoord a, ChunkCoord b) noexcept;
 
     [[nodiscard]] bool isChunkPending(ChunkCoord coord) const;
+    void touchChunk(ChunkCoord coord);
     void evictFarChunks(ChunkCoord center, int keepRadius);
+    void enforceBudget(ChunkCoord center, int protectedRadius);
 
     veys::JobSystem& jobs_;
     ChunkStorage storage_{"cache/chunks"};
     std::unordered_map<ChunkCoord, Chunk, ChunkCoordHash> chunks_{};
     std::vector<PendingChunk> pending_{};
+    std::unordered_map<ChunkCoord, std::size_t, ChunkCoordHash> touchTick_{};
+    std::size_t streamTick_{0};
+    std::size_t cacheHits_{0};
+    std::size_t cacheMisses_{0};
 };
 
 } // namespace veys::world

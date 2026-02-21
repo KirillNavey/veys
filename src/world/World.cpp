@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <limits>
 #include <utility>
 
 namespace veys::world {
@@ -39,12 +40,17 @@ bool World::isChunkPending(ChunkCoord coord) const {
         [&coord](const PendingChunk& pending) { return pending.coord == coord; });
 }
 
+void World::touchChunk(ChunkCoord coord) {
+    touchTick_.insert_or_assign(coord, streamTick_);
+}
+
 void World::evictFarChunks(ChunkCoord center, int keepRadius) {
     const int keepDistanceSq = keepRadius * keepRadius;
 
     for (auto it = chunks_.begin(); it != chunks_.end();) {
         if (distanceSq(it->first, center) > keepDistanceSq) {
             storage_.saveChunk(it->first, it->second);
+            touchTick_.erase(it->first);
             it = chunks_.erase(it);
             continue;
         }
@@ -52,7 +58,42 @@ void World::evictFarChunks(ChunkCoord center, int keepRadius) {
     }
 }
 
+void World::enforceBudget(ChunkCoord center, int protectedRadius) {
+    const int protectedDistanceSq = protectedRadius * protectedRadius;
+
+    while (chunks_.size() > kMaxLoadedChunks) {
+        auto victim = chunks_.end();
+        std::size_t victimTick = std::numeric_limits<std::size_t>::max();
+        int victimDistance = -1;
+
+        for (auto it = chunks_.begin(); it != chunks_.end(); ++it) {
+            const int dist = distanceSq(it->first, center);
+            if (dist <= protectedDistanceSq) {
+                continue;
+            }
+
+            const auto touchIt = touchTick_.find(it->first);
+            const std::size_t tick = touchIt != touchTick_.end() ? touchIt->second : 0;
+
+            if (tick < victimTick || (tick == victimTick && dist > victimDistance)) {
+                victim = it;
+                victimTick = tick;
+                victimDistance = dist;
+            }
+        }
+
+        if (victim == chunks_.end()) {
+            break;
+        }
+
+        storage_.saveChunk(victim->first, victim->second);
+        touchTick_.erase(victim->first);
+        chunks_.erase(victim);
+    }
+}
+
 void World::updateStreaming(float playerX, float playerZ, int radius) {
+    ++streamTick_;
     const ChunkCoord center{worldToChunk(playerX), worldToChunk(playerZ)};
     evictFarChunks(center, radius + 1);
 
@@ -63,15 +104,19 @@ void World::updateStreaming(float playerX, float playerZ, int radius) {
         for (int dx = -radius; dx <= radius; ++dx) {
             const ChunkCoord coord{center.x + dx, center.z + dz};
             if (chunks_.contains(coord) || isChunkPending(coord)) {
+                touchChunk(coord);
                 continue;
             }
 
             Chunk cached;
             if (storage_.loadChunk(coord, cached)) {
+                ++cacheHits_;
                 chunks_.insert_or_assign(coord, cached);
+                touchChunk(coord);
                 continue;
             }
 
+            ++cacheMisses_;
             candidates.push_back(coord);
         }
     }
@@ -97,7 +142,10 @@ void World::updateStreaming(float playerX, float playerZ, int radius) {
                 return chunk;
             }),
         });
+        touchChunk(coord);
     }
+
+    enforceBudget(center, radius);
 }
 
 void World::pollGeneration() {
@@ -111,6 +159,7 @@ void World::pollGeneration() {
         Chunk chunk = it->future.get();
         storage_.saveChunk(it->coord, chunk);
         chunks_.insert_or_assign(it->coord, std::move(chunk));
+        touchChunk(it->coord);
         it = pending_.erase(it);
     }
 }
@@ -121,6 +170,14 @@ std::size_t World::loadedChunkCount() const noexcept {
 
 std::size_t World::pendingChunkCount() const noexcept {
     return pending_.size();
+}
+
+std::size_t World::cacheHits() const noexcept {
+    return cacheHits_;
+}
+
+std::size_t World::cacheMisses() const noexcept {
+    return cacheMisses_;
 }
 
 std::vector<const Chunk*> World::loadedChunks() const {
