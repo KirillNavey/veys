@@ -26,7 +26,8 @@
    - Instance/device/swapchain/descriptor allocator/frame graph.
    - GPU memory allocator + transient allocators.
 3. **Rendering**:
-   - chunk meshing, PBR materials, denoising, RTGI.
+   - [~] chunk meshing baseline (surface faces + triangle estimate telemetry).
+   - [ ] PBR materials, denoising, RTGI.
 4. **Gameplay systems**:
    - Physics, AI, crafting, multiplayer replication.
 5. **Tooling**:

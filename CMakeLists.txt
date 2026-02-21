@@ -12,6 +12,7 @@ add_executable(veyscraft
     src/world/Chunk.cpp
     src/world/World.cpp
     src/world/ChunkStorage.cpp
+    src/world/ChunkMesher.cpp
     src/renderer/Renderer.cpp
 )
 
@@ -33,6 +34,7 @@ if(BUILD_TESTING)
         src/world/Chunk.cpp
         src/world/World.cpp
         src/world/ChunkStorage.cpp
+        src/world/ChunkMesher.cpp
     )
 
     target_include_directories(world_tests PRIVATE src)

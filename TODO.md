@@ -22,7 +22,7 @@
 - [~] CPU stub с обработкой нескольких чанков.
 - [ ] Реальный Vulkan backend: instance/device/swapchain.
 - [ ] Upload manager и GPU allocator (staging/transient).
-- [ ] Mesh generation (greedy meshing / mesh shaders).
+- [~] Mesh generation baseline: surface-face extraction + triangle estimate telemetry.
 - [ ] Visibility + occlusion + Hi-Z.
 - [ ] Frame graph и async compute-проходы.
 

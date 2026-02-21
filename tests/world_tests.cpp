@@ -1,5 +1,6 @@
 #include "core/JobSystem.hpp"
 #include "world/ChunkStorage.hpp"
+#include "world/ChunkMesher.hpp"
 #include "world/World.hpp"
 
 #include <filesystem>
@@ -41,6 +42,26 @@ bool testChunkStorageRoundTrip() {
 }
 
 
+
+
+
+bool testChunkMesherSurfaceStats() {
+    veys::world::Chunk chunk;
+    std::array<veys::world::Voxel, veys::world::Chunk::kVoxelCount> voxels{};
+    chunk.replaceAll(voxels);
+
+    const int c = veys::world::Chunk::kSize / 2;
+    voxels[static_cast<std::size_t>(c + c * veys::world::Chunk::kSize + c * veys::world::Chunk::kSize * veys::world::Chunk::kSize)] = veys::world::Voxel{1};
+    chunk.replaceAll(voxels);
+
+    const auto stats = veys::world::ChunkMesher::buildSurfaceStats(chunk);
+    if (stats.visibleFaces != 6 || stats.estimatedTriangles != 12) {
+        std::cerr << "unexpected mesher stats for single voxel\n";
+        return false;
+    }
+
+    return true;
+}
 
 bool testChunkStorageRejectsCorruptedFile() {
     const std::filesystem::path root{"test_cache/chunk_storage_corrupt"};
@@ -131,11 +152,12 @@ bool testWorldEvictionWhileMoving() {
 
 int main() {
     const bool okStorage = testChunkStorageRoundTrip();
+    const bool okMesher = testChunkMesherSurfaceStats();
     const bool okCorrupt = testChunkStorageRejectsCorruptedFile();
     const bool okWorldCache = testWorldCacheHitAfterWarmup();
     const bool okWorldEviction = testWorldEvictionWhileMoving();
 
-    if (!okStorage || !okCorrupt || !okWorldCache || !okWorldEviction) {
+    if (!okStorage || !okMesher || !okCorrupt || !okWorldCache || !okWorldEviction) {
         return 1;
     }
 

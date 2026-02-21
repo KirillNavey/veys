@@ -1,5 +1,7 @@
 #include "renderer/Renderer.hpp"
 
+#include "world/ChunkMesher.hpp"
+
 #include <iostream>
 
 #if __has_include(<vulkan/vulkan.h>)
@@ -33,8 +35,13 @@ void Renderer::drawFrame(const world::World& world) {
     const auto chunks = world.loadedChunks();
 
     std::size_t visibleVoxels = 0;
+    std::size_t visibleFaces = 0;
+    std::size_t estimatedTriangles = 0;
     for (const world::Chunk* chunk : chunks) {
         visibleVoxels += chunk->solidVoxelCount();
+        const world::MeshStats meshStats = world::ChunkMesher::buildSurfaceStats(*chunk);
+        visibleFaces += meshStats.visibleFaces;
+        estimatedTriangles += meshStats.estimatedTriangles;
     }
 
     if (frameIndex_ % 60 == 0) {
@@ -47,7 +54,9 @@ void Renderer::drawFrame(const world::World& world) {
                   << " | generated=" << world.generatedChunks()
                   << " | cache loaded=" << world.loadedFromCacheChunks()
                   << " | evicted=" << world.evictedChunks()
-                  << " | visible voxels=" << visibleVoxels << '\n';
+                  << " | visible voxels=" << visibleVoxels
+                  << " | visible faces=" << visibleFaces
+                  << " | est triangles=" << estimatedTriangles << '\n';
     }
 }
 
