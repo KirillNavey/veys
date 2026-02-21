@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <utility>
 
 namespace veys::world {
 
@@ -43,6 +44,7 @@ void World::evictFarChunks(ChunkCoord center, int keepRadius) {
 
     for (auto it = chunks_.begin(); it != chunks_.end();) {
         if (distanceSq(it->first, center) > keepDistanceSq) {
+            storage_.saveChunk(it->first, it->second);
             it = chunks_.erase(it);
             continue;
         }
@@ -63,6 +65,13 @@ void World::updateStreaming(float playerX, float playerZ, int radius) {
             if (chunks_.contains(coord) || isChunkPending(coord)) {
                 continue;
             }
+
+            Chunk cached;
+            if (storage_.loadChunk(coord, cached)) {
+                chunks_.insert_or_assign(coord, cached);
+                continue;
+            }
+
             candidates.push_back(coord);
         }
     }
@@ -99,7 +108,9 @@ void World::pollGeneration() {
             continue;
         }
 
-        chunks_.insert_or_assign(it->coord, it->future.get());
+        Chunk chunk = it->future.get();
+        storage_.saveChunk(it->coord, chunk);
+        chunks_.insert_or_assign(it->coord, std::move(chunk));
         it = pending_.erase(it);
     }
 }

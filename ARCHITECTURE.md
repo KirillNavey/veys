@@ -20,7 +20,7 @@
 1. **World streaming production-ready**:
    - [x] eviction + базовый memory budget.
    - [x] приоритизация генерации ближних чанков.
-   - [ ] сериализация/кеш чанков на диск.
+   - [x] сериализация/кеш чанков на диск (binary cache).
    - [ ] LRU/temperature-based memory eviction.
 2. **Vulkan backend production-ready**:
    - Instance/device/swapchain/descriptor allocator/frame graph.

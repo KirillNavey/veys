@@ -11,6 +11,7 @@ add_executable(veyscraft
     src/core/JobSystem.cpp
     src/world/Chunk.cpp
     src/world/World.cpp
+    src/world/ChunkStorage.cpp
     src/renderer/Renderer.cpp
 )
 

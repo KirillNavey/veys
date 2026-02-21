@@ -63,4 +63,12 @@ std::size_t Chunk::solidVoxelCount() const noexcept {
     return count;
 }
 
+std::span<const Voxel, Chunk::kVoxelCount> Chunk::voxels() const noexcept {
+    return std::span<const Voxel, kVoxelCount>{voxels_};
+}
+
+void Chunk::replaceAll(const std::array<Voxel, kVoxelCount>& data) noexcept {
+    voxels_ = data;
+}
+
 } // namespace veys::world

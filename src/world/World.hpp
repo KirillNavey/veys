@@ -2,6 +2,8 @@
 
 #include "core/JobSystem.hpp"
 #include "world/Chunk.hpp"
+#include "world/ChunkCoord.hpp"
+#include "world/ChunkStorage.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -10,17 +12,6 @@
 #include <vector>
 
 namespace veys::world {
-
-struct ChunkCoord {
-    int x{0};
-    int z{0};
-
-    [[nodiscard]] bool operator==(const ChunkCoord& other) const noexcept = default;
-};
-
-struct ChunkCoordHash {
-    [[nodiscard]] std::size_t operator()(const ChunkCoord& coord) const noexcept;
-};
 
 class World {
 public:
@@ -50,6 +41,7 @@ private:
     void evictFarChunks(ChunkCoord center, int keepRadius);
 
     veys::JobSystem& jobs_;
+    ChunkStorage storage_{"cache/chunks"};
     std::unordered_map<ChunkCoord, Chunk, ChunkCoordHash> chunks_{};
     std::vector<PendingChunk> pending_{};
 };

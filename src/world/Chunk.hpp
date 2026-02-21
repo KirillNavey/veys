@@ -4,6 +4,7 @@
 
 #include <array>
 #include <cstdint>
+#include <span>
 
 namespace veys::world {
 
@@ -21,6 +22,8 @@ public:
 
     [[nodiscard]] const Voxel& at(int x, int y, int z) const;
     [[nodiscard]] std::size_t solidVoxelCount() const noexcept;
+    [[nodiscard]] std::span<const Voxel, kVoxelCount> voxels() const noexcept;
+    void replaceAll(const std::array<Voxel, kVoxelCount>& data) noexcept;
 
 private:
     static constexpr int idx(int x, int y, int z) {

@@ -16,7 +16,7 @@
 - [x] Ограниченный радиус стриминга (клипмап уровня 0).
 - [x] Удаление дальних чанков и лимиты по памяти (базовый budget).
 - [x] Система приоритетов (ближние чанки важнее).
-- [ ] Сериализация/десериализация чанков на диск.
+- [x] Сериализация/десериализация чанков на диск (базовый binary cache).
 
 ## 2) Render Backend
 - [~] CPU stub с обработкой нескольких чанков.
@@ -47,5 +47,5 @@
 
 ## Ближайшие 3 спринта
 1. **Sprint A (сделано в этом PR):** world streaming foundation + async chunk generation + renderer integration.
-2. **Sprint B (частично сделано):** eviction policy + chunk priorities + базовый memory budget; далее LRU и save/load format.
+2. **Sprint B (почти готов):** eviction policy + chunk priorities + базовый memory budget + save/load cache; далее LRU format evolution.
 3. **Sprint C:** Vulkan swapchain path, upload buffers, первые drawable chunk meshes.
