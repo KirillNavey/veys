@@ -6,6 +6,7 @@
 #include "world/ChunkStorage.hpp"
 
 #include <cstddef>
+#include <filesystem>
 #include <cstdint>
 #include <future>
 #include <unordered_map>
@@ -16,6 +17,7 @@ namespace veys::world {
 class World {
 public:
     explicit World(veys::JobSystem& jobs);
+    World(veys::JobSystem& jobs, std::filesystem::path storageRoot);
 
     void updateStreaming(float playerX, float playerZ, int radius);
     void pollGeneration();
@@ -45,7 +47,7 @@ private:
     void enforceBudget(ChunkCoord center, int protectedRadius);
 
     veys::JobSystem& jobs_;
-    ChunkStorage storage_{"cache/chunks"};
+    ChunkStorage storage_;
     std::unordered_map<ChunkCoord, Chunk, ChunkCoordHash> chunks_{};
     std::vector<PendingChunk> pending_{};
     std::unordered_map<ChunkCoord, std::size_t, ChunkCoordHash> touchTick_{};

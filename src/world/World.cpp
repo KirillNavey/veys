@@ -15,7 +15,11 @@ std::size_t ChunkCoordHash::operator()(const ChunkCoord& coord) const noexcept {
 }
 
 World::World(veys::JobSystem& jobs)
-    : jobs_{jobs} {
+    : World{jobs, "cache/chunks"} {
+}
+
+World::World(veys::JobSystem& jobs, std::filesystem::path storageRoot)
+    : jobs_{jobs}, storage_{std::move(storageRoot)} {
 }
 
 int World::worldToChunk(float worldPos) noexcept {

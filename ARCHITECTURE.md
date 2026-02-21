@@ -30,6 +30,7 @@
 4. **Gameplay systems**:
    - Physics, AI, crafting, multiplayer replication.
 5. **Tooling**:
+   - Стартовый CTest для world/storage smoke + regression.
    - Editor, telemetry, crash reporting, hot-reload shaders.
 
 Детализация задач и статусы: [TODO.md](TODO.md)

@@ -7,6 +7,7 @@
 cmake -S . -B build
 cmake --build build -j
 ./build/veyscraft
+ctest --test-dir build --output-on-failure
 ```
 
 ## Что уже реализовано
